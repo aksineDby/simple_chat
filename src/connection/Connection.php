@@ -5,6 +5,8 @@ class Connection
 {
     private $resource;
     private $id;
+    private $login = '';
+    private $ip = '';
     private static $allConnections = [];
 
     public static function new($resource): Connection
@@ -41,5 +43,27 @@ class Connection
         if (is_resource($this->getResource())) {
             fclose($this->getResource());
         }
+    }
+
+    public function setLogin(string $login): Connection
+    {
+        $this->login = $login;
+        return $this;
+    }
+
+    public function getLogin(): string
+    {
+        return $this->login;
+    }
+
+    public function setIp(string $ip): Connection
+    {
+        $this->ip = $ip;
+        return $this;
+    }
+
+    public function getIp(): string
+    {
+        return $this->ip;
     }
 }

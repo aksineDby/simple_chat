@@ -45,12 +45,13 @@ abstract class WebsocketWorker
                 //подключаемся к нему и делаем рукопожатие, согласно протоколу веб-сокета
                 if ($client = stream_socket_accept($this->server, -1)) {
                     $address = explode(':', stream_socket_get_name($client, true));
-                    if (isset($this->ips[$address[0]]) && $this->ips[$address[0]] > 2) {//блокируем более 2 соединений с одного ip
+                    if (isset($this->ips[$address[0]]) && $this->ips[$address[0]] > MAX_ALLOWED_CONNECTIONS_FROM_ONE_IP) {//блокируем более MAX_ALLOWED_CONNECTIONS_FROM_ONE_IP соединений с одного ip
                         @fclose($client);
                     } else {
                         @$this->ips[$address[0]]++;
 
                         $connection = Connection::new($client);
+                        $connection->setIp($address[0]);
                         $this->connectionStore->attach($connection);
                         $this->handshakes[$connection->getId()] = false;//отмечаем, что нужно сделать рукопожатие
                     }
@@ -164,14 +165,12 @@ abstract class WebsocketWorker
                 break;
         }
 
-        // set mask and payload length (using 1, 3 or 9 bytes)
         if ($payloadLength > 65535) {
             $payloadLengthBin = str_split(sprintf('%064b', $payloadLength), 8);
             $frameHead[1] = ($masked === true) ? 255 : 127;
             for ($i = 0; $i < 8; $i++) {
                 $frameHead[$i + 2] = bindec($payloadLengthBin[$i]);
             }
-            // most significant bit MUST be 0
             if ($frameHead[2] > 127) {
                 return ['type' => '', 'payload' => '', 'error' => 'frame too large (1004)'];
             }
@@ -184,12 +183,10 @@ abstract class WebsocketWorker
             $frameHead[1] = ($masked === true) ? $payloadLength + 128 : $payloadLength;
         }
 
-        // convert frame-head to string:
         foreach (array_keys($frameHead) as $i) {
             $frameHead[$i] = chr($frameHead[$i]);
         }
         if ($masked === true) {
-            // generate a random mask:
             $mask = [];
             for ($i = 0; $i < 4; $i++) {
                 $mask[$i] = chr(rand(0, 255));
@@ -212,14 +209,12 @@ abstract class WebsocketWorker
         $unmaskedPayload = '';
         $decodedData = [];
 
-        // estimate frame type:
         $firstByteBinary = sprintf('%08b', ord($data[0]));
         $secondByteBinary = sprintf('%08b', ord($data[1]));
         $opcode = bindec(substr($firstByteBinary, 4, 4));
         $isMasked = ($secondByteBinary[0] == '1');
         $payloadLength = ord($data[1]) & 127;
 
-        // unmasked frame is received:
         if (!$isMasked) {
             return ['type' => '', 'payload' => '', 'error' => 'protocol error (1002)'];
         }
@@ -272,11 +267,6 @@ abstract class WebsocketWorker
             $dataLength = $payloadLength + $payloadOffset;
         }
 
-        /**
-         * We have to check for large frames here. socket_recv cuts at 1024 bytes
-         * so if websocket-frame is > 1024 bytes we have to wait until whole
-         * data is transferd.
-         */
         if (strlen($data) < $dataLength) {
             return false;
         }
@@ -287,7 +277,7 @@ abstract class WebsocketWorker
                 $unmaskedPayload .= $data[$i] ^ $mask[$j % 4];
             }
         }
-        $decodedData['payload'] = $unmaskedPayload;
+        $decodedData['payload'] = substr(strip_tags($unmaskedPayload), 0, 140);
 
         return $decodedData;
     }

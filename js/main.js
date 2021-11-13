@@ -1,7 +1,9 @@
 
 $(function(){
     const chat = $("#messagePlace");
-    window.input = $('#input');
+    const input = $('#input');
+    const login = $('#login');
+    const sendForm = $('#sendForm');
 
     function wsStart() {
         window.ws = new WebSocket("ws://0.0.0.0:8000/");
@@ -20,14 +22,48 @@ $(function(){
     }
     wsStart();
 
-    input.focus();
+    login.val('Guest#' + parseInt(Math.random() * 100, 10));
 
-    $('#sendForm').submit(function(e){
+    login.keydown(function(e){
+        if (e.which === 13 || e.keyCode === 13) {
+            //code to execute here
+            return false;
+        }
+    });
+    login.keyup(function(e){
+        let self = $(this);
+        if (!self.val()) {
+            self.addClass('invalid');
+        } else if (self.hasClass('invalid')){
+            self.removeClass('invalid');
+        }
+    });
+
+    sendForm.submit(function(e){
         e.preventDefault();
         e.stopPropagation();
-        window.ws.send(input.val());
+        if (login.val().length < 1) {
+            return false;
+        }
+        let message = input.val();
+        if (message.length > 140) {
+            message = message.substr(0, 140);
+        }
+        let msg = {
+            author: login.val(),
+            message: message
+        };
+        let msgJson = JSON.stringify(msg);
+        window.ws.send(msgJson);
         input.val('');
         return false;
     });
 
+    input.keydown(function(e){
+        if ((e.keyCode === 10 || e.keyCode === 13) && e.ctrlKey) {
+            sendForm.submit();
+        }
+    });
+
+    login.focus();
 });

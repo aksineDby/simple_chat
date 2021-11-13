@@ -8,12 +8,16 @@
 </head>
 
 <body>
-    <div id="chatWrapper">
-        <div id="messagePlace"></div>
-        <div class="bottom">
-            <form id="sendForm">
-                <input id="input" type="text" placeholder="Text input" maxlength="140" autocomplete="off">
-            </form>
+    <div id="border">
+        <div id="chatWrapper">
+            <div id="camera"></div>
+            <div id="messagePlace"></div>
+            <div class="bottom">
+                <form id="sendForm">
+                    <input id="login" type="text" placeholder="Login" maxlength="64" autocomplete="off" value="Guest" required>
+                    <textarea id="input" placeholder="Text input" maxlength="140" autocomplete="off"></textarea>
+                </form>
+            </div>
         </div>
     </div>
 
