@@ -1,0 +1,30 @@
+body{
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #008408;
+}
+#chatWrapper {
+    width: 500px;
+    height: 100%;
+    overflow: auto;
+    position: relative;
+    background-color: #cdffc3;
+    box-shadow: 1px 1px 5px;
+    border-radius: 15px;
+    margin: auto;
+}
+#input {
+    margin: 0 15px 0 15px;
+    width: 462px;
+}
+
+.bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+}
