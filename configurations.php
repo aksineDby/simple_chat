@@ -1,10 +1,11 @@
 <?php
 
-CONST WEBSOCKET_SERVER = 'tcp://0.0.0.0:8000';
+CONST WEBSOCKET_SERVER = 'tcp://0.0.0.0:8000'; /* В случае редактирования - не забыть поправить на фронте */
 CONST WEBSOCKET_ACCEPT_KEY = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
-
-CONST LOG_TO_DB = false;
+CONST LOAD_HISTORY_AFTER_LOGIN = true;
+CONST LOAD_HISTORY_MESSAGES = 25;
+CONST LOG_TO_DB = true;
 CONST DB_HOST = 'localhost';
 CONST DB_NAME = 'chat';
 CONST DB_USER = 'root';

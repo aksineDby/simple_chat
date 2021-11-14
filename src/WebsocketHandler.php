@@ -20,6 +20,14 @@ class WebsocketHandler extends WebsocketWorker
 
         $this->connectionStore->attach(Connection::new($client));
         echo __METHOD__ . ": new count users: {$this->connectionStore->count()}" . PHP_EOL;
+        if (LOAD_HISTORY_AFTER_LOGIN) {
+            $messages = Message::loadMessages();
+            if (count($messages)) {
+                $messagesAsString = implode('<br>', $messages);
+                echo __METHOD__ . ': send history for new user' . PHP_EOL;
+                $this->sendToResource($client, $messagesAsString);
+            }
+        }
     }
 
     protected function onClose($client)
@@ -46,9 +54,11 @@ class WebsocketHandler extends WebsocketWorker
         $connection = Connection::new($client);
         $connection->setLogin($author);
 
-        $message = "<span class='login'><b>{$connection->getLogin()}</b>#{$connection->getIp()}</span>: $msg";
-        echo __METHOD__ . ": $message" . PHP_EOL;
-        $this->send($message);
+        $message = new Message($connection->getLogin(), $msg, $connection->getIp());
+        $htmlMsg = $message->getHtml();
+        echo __METHOD__ . ": $htmlMsg" . PHP_EOL;
+        MessageDB::addLog($message);
+        $this->send($htmlMsg);
     }
 
     protected function send($data)
@@ -62,7 +72,7 @@ class WebsocketHandler extends WebsocketWorker
             }
         }
 
-        if (stream_select($read, $write, $except, 0)) {
+        if (false !== stream_select($read, $write, $except, 200000)) {
             foreach ($write as $client) {
                 echo __METHOD__ . ": call fwrite with data `$data` to: $client" . PHP_EOL;
                 @fwrite($client, $data);
@@ -72,8 +82,9 @@ class WebsocketHandler extends WebsocketWorker
 
     protected function sendToResource($resource, string $data)
     {
+        $data = $this->encode($data);
         $write = [$resource];
-        if (stream_select($read, $write, $except, 0)) {
+        if (false !== stream_select($read, $write, $except, 200000)) {
             foreach ($write as $client) {
                 echo __METHOD__ . ": call fwrite with data `$data` to: $client" . PHP_EOL;
                 @fwrite($client, $data);

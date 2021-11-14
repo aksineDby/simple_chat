@@ -10,13 +10,19 @@
 <body>
     <div id="border">
         <div id="chatWrapper">
-            <div id="camera"></div>
+            <div class="camera"></div>
             <div id="messagePlace"></div>
             <div class="bottom">
                 <form id="sendForm">
                     <input id="login" type="text" placeholder="Login" maxlength="64" autocomplete="off" value="Guest" required>
                     <textarea id="input" placeholder="Text input" maxlength="140" autocomplete="off"></textarea>
                 </form>
+            </div>
+        </div>
+        <div id="chatWrapperLoading">
+            <div class="camera"></div>
+            <div class="spinnerWrapper">
+                <div class="lds-default"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
             </div>
         </div>
     </div>

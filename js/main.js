@@ -4,6 +4,9 @@ $(function(){
     const input = $('#input');
     const login = $('#login');
     const sendForm = $('#sendForm');
+    const spinner = $('#chatWrapperLoading');
+
+    let needClear = false;
 
     function wsStart() {
         window.ws = new WebSocket("ws://0.0.0.0:8000/");
@@ -13,11 +16,15 @@ $(function(){
         ws.onclose = function() {
             console.log('onclose');
             setTimeout(wsStart, 1000);
+            needClear = true;
+            spinner.show();
         };
         ws.onmessage = function(evt) {
             console.log('onmessage');
+            if (needClear) chat.empty();
             chat.append("<p>"+evt.data+"</p>");
             chat.scrollTop = chat[0].scrollHeight;
+            spinner.hide();
         };
     }
     wsStart();
@@ -30,7 +37,7 @@ $(function(){
             return false;
         }
     });
-    login.keyup(function(e){
+    login.keyup(function(){
         let self = $(this);
         if (!self.val()) {
             self.addClass('invalid');
