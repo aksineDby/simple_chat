@@ -14,7 +14,7 @@ class WebsocketHandler extends WebsocketWorker
 
         if ($this->connectionStore->count() > MAX_USER_ONLINE) {
             echo __METHOD__ . ": max users count[{$this->connectionStore->count()}]. Exit." . PHP_EOL;
-//            $this->sendToResource($client, 'close');
+            $this->sendToResource($client, 'close');
             return;
         }
 
@@ -27,6 +27,9 @@ class WebsocketHandler extends WebsocketWorker
                 echo __METHOD__ . ': send history for new user' . PHP_EOL;
                 $this->sendToResource($client, $messagesAsString);
             }
+        } else {
+            echo __METHOD__ . ': send empty message as pinPONG' . PHP_EOL;
+            $this->sendToResource($client, '');
         }
     }
 

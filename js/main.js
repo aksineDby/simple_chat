@@ -22,9 +22,14 @@ $(function(){
         ws.onmessage = function(evt) {
             console.log('onmessage');
             if (needClear) chat.empty();
-            chat.append("<p>"+evt.data+"</p>");
-            chat.scrollTop = chat[0].scrollHeight;
-            spinner.hide();
+            if (evt.data === 'close') {
+                alert('sorry, limit of users.');
+                ws.close();
+            } else {
+                chat.append("<p>"+evt.data+"</p>");
+                chat.scrollTop = chat[0].scrollHeight;
+                spinner.hide();
+            }
         };
     }
     wsStart();
